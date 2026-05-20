@@ -17,7 +17,7 @@ const verifyToken = async (req, res, next) => {
     try {
       const decoded = jwt.verify(cookieToken, process.env.JWT_SECRET);
       req.user = decoded;
-      return next(); // ← return দিয়ে বের হয়ে যাও
+      return next(); 
     } catch (error) {
       return res.status(403).json({ message: 'Invalid token' });
     }
@@ -28,13 +28,12 @@ const verifyToken = async (req, res, next) => {
     try {
       const { payload } = await jwtVerify(headerToken, JWKS);
       req.user = payload;
-      return next(); // ← return দিয়ে বের হয়ে যাও
+      return next();
     } catch (error) {
       return res.status(403).json({ message: 'Invalid token' });
     }
   }
 
-  // কোনো token নেই
   return res.status(401).json({ message: 'Unauthorized' });
 };
 
