@@ -3,7 +3,7 @@ const router = express.Router();
 const Idea = require('../models/Idea');
 const verifyToken = require('../middleware/verifyToken');
 
-// Get all ideas (with search & filter)
+// all ideas (with search & filter)
 router.get('/', async (req, res) => {
   try {
     const { search, category, date } = req.query;
@@ -35,7 +35,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get trending ideas (6 ideas)
+// trending ideas (6 ideas)
 router.get('/trending', async (req, res) => {
   try {
     const ideas = await Idea.find().sort({ views: -1 }).limit(6);
@@ -90,7 +90,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
   }
 });
 
-// Get my ideas
+// my ideas
 router.get('/user/:email', verifyToken, async (req, res) => {
   try {
     const ideas = await Idea.find({ authorEmail: req.params.email });
