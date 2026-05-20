@@ -6,7 +6,7 @@ const verifyToken = require('../middleware/verifyToken');
 // Get all ideas (with search & filter)
 router.get('/', async (req, res) => {
   try {
-    const { search, category } = req.query;
+    const { search, category, date } = req.query;
     let query = {};
 
     if (search) {
@@ -14,6 +14,18 @@ router.get('/', async (req, res) => {
     }
     if (category) {
       query.category = category;
+    }
+    if (date) {
+      const now = new Date();
+      let startDate;
+      if (date === "today") {
+        startDate = new Date(now.setHours(0, 0, 0, 0));
+      } else if (date === "week") {
+        startDate = new Date(now.setDate(now.getDate() - 7));
+      } else if (date === "month") {
+        startDate = new Date(now.setMonth(now.getMonth() - 1));
+      }
+      if (startDate) query.createdAt = { $gte: startDate };
     }
 
     const ideas = await Idea.find(query).sort({ createdAt: -1 });

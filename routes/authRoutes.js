@@ -106,5 +106,59 @@ router.get('/me', async (req, res) => {
     res.status(401).json({ message: 'Invalid token' });
   }
 });
+// Top Contributors
+router.get('/top-contributors', async (req, res) => {
+  try {
+    const Comment = require('../models/Comment');
+    const Idea = require('../models/Idea');
+
+    const users = await User.find().select('-password');
+
+    const contributors = await Promise.all(
+      users.map(async (user) => {
+        const ideaCount = await Idea.countDocuments({ authorEmail: user.email });
+        const commentCount = await Comment.countDocuments({ userEmail: user.email });
+        return {
+          name: user.name,
+          email: user.email,
+          photoURL: user.photoURL,
+          ideaCount,
+          commentCount,
+          score: ideaCount * 3 + commentCount,
+        };
+      })
+    );
+
+    const sorted = contributors
+      .filter((c) => c.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 6);
+
+    res.json(sorted);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update Profile
+router.put('/update-profile', async (req, res) => {
+  try {
+    const token = req.cookies?.token;
+    if (!token) return res.status(401).json({ message: 'Unauthorized' });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { name, photoURL } = req.body;
+
+    const user = await User.findOneAndUpdate(
+      { email: decoded.email },
+      { name, photoURL },
+      { new: true }
+    ).select('-password');
+
+    res.json({ message: 'Profile updated', user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 module.exports = router;
