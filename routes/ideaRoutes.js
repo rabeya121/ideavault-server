@@ -35,7 +35,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// trending ideas (6 ideas)
+// trending ideas 
 router.get('/trending', async (req, res) => {
   try {
     const ideas = await Idea.find().sort({ views: -1 }).limit(6);
