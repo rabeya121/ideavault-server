@@ -23,12 +23,23 @@ app.use('/api/auth', authRoutes);
 app.use('/api/ideas', ideaRoutes);
 app.use('/api/comments', commentRoutes);
 
-app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://ideavault-client-beta.vercel.app', 
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+  })
+);
 
 app.get('/', (req, res) => {
   res.send('IdeaVault Server Running! 🚀');
