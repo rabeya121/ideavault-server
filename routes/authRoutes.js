@@ -4,6 +4,13 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  maxAge: 7 * 24 * 60 * 60 * 1000
+};
+
 // Register
 router.post('/register', async (req, res) => {
   try {
@@ -19,12 +26,7 @@ router.post('/register', async (req, res) => {
 
     const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
+    res.cookie('token', token, cookieOptions);
 
     res.status(201).json({ message: 'User created successfully', user: { name, email, photoURL } });
   } catch (error) {
@@ -49,12 +51,7 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
+    res.cookie('token', token, cookieOptions);
 
     res.json({ message: 'Login successful', user: { name: user.name, email: user.email, photoURL: user.photoURL } });
   } catch (error) {
@@ -74,12 +71,7 @@ router.post('/google-login', async (req, res) => {
 
     const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
+    res.cookie('token', token, cookieOptions);
 
     res.json({ message: 'Login successful', user: { name: user.name, email: user.email, photoURL: user.photoURL } });
   } catch (error) {
@@ -89,7 +81,7 @@ router.post('/google-login', async (req, res) => {
 
 // Logout
 router.post('/logout', (req, res) => {
-  res.clearCookie('token');
+  res.clearCookie('token', cookieOptions);
   res.json({ message: 'Logged out successfully' });
 });
 
@@ -106,6 +98,7 @@ router.get('/me', async (req, res) => {
     res.status(401).json({ message: 'Invalid token' });
   }
 });
+
 // Top Contributors
 router.get('/top-contributors', async (req, res) => {
   try {
