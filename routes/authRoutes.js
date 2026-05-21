@@ -132,7 +132,7 @@ router.get('/top-contributors', async (req, res) => {
     const sorted = contributors
       .filter((c) => c.score > 0)
       .sort((a, b) => b.score - a.score)
-      .slice(0, 6);
+      .slice(0, 4);
 
     res.json(sorted);
   } catch (error) {
