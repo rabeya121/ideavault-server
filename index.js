@@ -1,70 +1,3 @@
-// const express = require("express");
-// const cors = require("cors");
-// const dotenv = require("dotenv");
-// const cookieParser = require("cookie-parser");
-// const connectDB = require("./config/db");
-// const authRoutes = require("./routes/authRoutes");
-// const ideaRoutes = require("./routes/ideaRoutes");
-// const commentRoutes = require("./routes/commentRoutes");
-
-// dotenv.config();
-// connectDB();
-
-// const app = express();
-
-// const allowedOrigins = [
-//   'http://localhost:3000',
-//   'https://ideavault-client-beta.vercel.app',
-//   'https://ideavault-client-j14snob09-rabeyahridi04-5685s-projects.vercel.app',
-// ];
-
-// app.use(
-//   cors({
-//     origin: (origin, callback) => {
-//       if (!origin || allowedOrigins.includes(origin)) {
-//         callback(null, true);
-//       } else {
-//         callback(new Error('Not allowed by CORS'));
-//       }
-//     },
-//     credentials: true,
-//   })
-// );
-// app.use(express.json());
-// app.use(cookieParser());
-
-// app.use("/api/auth", authRoutes);
-// app.use("/api/ideas", ideaRoutes);
-// app.use("/api/comments", commentRoutes);
-
-// const allowedOrigins = [
-//   "http://localhost:3000",
-//   "https://ideavault-client-beta.vercel.app",
-// ];
-
-// app.use(
-//   cors({
-//     origin: (origin, callback) => {
-//       if (!origin || allowedOrigins.includes(origin)) {
-//         callback(null, true);
-//       } else {
-//         callback(new Error("Not allowed by CORS"));
-//       }
-//     },
-//     credentials: true,
-//   }),
-// );
-
-// app.get("/", (req, res) => {
-//   res.send("IdeaVault Server Running! 🚀");
-// });
-
-// const PORT = process.env.PORT || 8000;
-// app.listen(PORT, () => {
-//   console.log(`✅ Server running on port ${PORT}`);
-// });
-
-
 
 const express = require("express");
 const cors = require("cors");
@@ -204,7 +137,7 @@ app.post("/api/auth/login", async (req, res) => {
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
     const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: "7d" });
     res.cookie("token", token, cookieOptions);
-    res.json({ message: "Login successful", user: { name: user.name, email: user.email, photoURL: user.photoURL } });
+    res.json({ message: "Login successful!", user: { name: user.name, email: user.email, photoURL: user.photoURL } });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -268,7 +201,7 @@ app.put("/api/auth/update-profile", async (req, res) => {
   }
 });
 
-// ─── IDEA ROUTES ───────────────────────────────────
+// ------IDEA ROUTES ------
 app.get("/api/ideas", async (req, res) => {
   try {
     const { search, category, date } = req.query;
@@ -308,6 +241,7 @@ app.get("/api/ideas/user/:email", verifyToken, async (req, res) => {
   }
 });
 
+
 app.get("/api/ideas/:id", async (req, res) => {
   try {
     const idea = await Idea.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } }, { new: true });
@@ -345,7 +279,8 @@ app.delete("/api/ideas/:id", verifyToken, async (req, res) => {
   }
 });
 
-// ─── COMMENT ROUTES ────────────────────────────────
+// ------COMMENT ROUTES -----
+
 app.get("/api/comments/:ideaId", async (req, res) => {
   try {
     const comments = await Comment.find({ ideaId: req.params.ideaId }).sort({ createdAt: -1 });
@@ -391,11 +326,11 @@ app.get("/api/comments/user/:email", verifyToken, async (req, res) => {
   }
 });
 
-// ─── ROOT ──────────────────────────────────────────
+// ---- ROOT ----------
 app.get("/", (req, res) => {
   res.send("IdeaVault Server Running! 🚀");
 });
 
-// ─── START ─────────────────────────────────────────
+// -------START SERVER --------------
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
