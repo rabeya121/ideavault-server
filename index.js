@@ -9,13 +9,13 @@ const { createRemoteJWKSet, jwtVerify } = require("jose-cjs");
 
 require("dotenv").config();
 
-// ─── DB ────────────────────────────────────────────
+// --------------------DB ----------------------------
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => console.log("✅ MongoDB Connected!"))
   .catch((err) => console.error("❌ MongoDB Error:", err.message));
 
-// ─── MODELS ────────────────────────────────────────
+// --------------------MODELS ----------------------------
 const User = mongoose.model("User", new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -50,7 +50,7 @@ const Comment = mongoose.model("Comment", new mongoose.Schema({
   text: { type: String, required: true },
 }, { timestamps: true }));
 
-// ─── APP ───────────────────────────────────────────
+// --------------------APP ----------------------------
 const app = express();
 
 const allowedOrigins = [
@@ -72,7 +72,7 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-// ─── COOKIE OPTIONS ────────────────────────────────
+// --------------------COOKIE OPTIONS ------------------------
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
@@ -80,7 +80,7 @@ const cookieOptions = {
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
-// ─── VERIFY TOKEN ──────────────────────────────────
+// ---------------------------VERIFY TOKEN ----------------------------------
 const verifyToken = async (req, res, next) => {
   const cookieToken = req.cookies?.token;
   const authHeader = req.headers?.authorization;
@@ -114,7 +114,7 @@ const verifyToken = async (req, res, next) => {
   return res.status(401).json({ message: "Unauthorized" });
 };
 
-// ─── AUTH ROUTES ───────────────────────────────────
+// --------------------AUTH ROUTES ------------------------
 app.post("/api/auth/register", async (req, res) => {
   try {
     const { name, email, password, photoURL } = req.body;
@@ -203,7 +203,7 @@ app.put("/api/auth/update-profile", async (req, res) => {
   }
 });
 
-// ─── IDEA ROUTES ───────────────────────────────────
+// --------------------IDEA ROUTES ------------------------
 app.get("/api/ideas", async (req, res) => {
   try {
     const { search, category, date } = req.query;
@@ -242,7 +242,7 @@ app.get("/api/ideas/trending", async (req, res) => {
   }
 });
 
-// ← specific routes আগে
+// ← specific routes must be defined before general ones to avoid conflicts
 app.get("/api/ideas/user/:email", verifyToken, async (req, res) => {
   try {
     const ideas = await Idea.find({ authorEmail: req.params.email });
@@ -281,7 +281,7 @@ app.post("/api/ideas/:id/unlike", verifyToken, async (req, res) => {
   }
 });
 
-// ← /:id routes পরে
+//  :id routes
 app.get("/api/ideas/:id", async (req, res) => {
   try {
     const idea = await Idea.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } }, { new: true });
@@ -319,7 +319,7 @@ app.delete("/api/ideas/:id", verifyToken, async (req, res) => {
   }
 });
 
-// ─── BOOKMARK ROUTES ───────────────────────────────
+//----------------------------- BOOKMARK ROUTES -----------------------
 app.post("/api/bookmark/:ideaId", verifyToken, async (req, res) => {
   try {
     const { email } = req.user;
@@ -342,7 +342,8 @@ app.delete("/api/bookmark/:ideaId", verifyToken, async (req, res) => {
     user.bookmarks = user.bookmarks.filter((id) => id !== req.params.ideaId);
     await user.save();
     res.json({ message: "Bookmark removed!", bookmarks: user.bookmarks });
-  } catch (error) {
+  } 
+  catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
@@ -358,7 +359,7 @@ app.get("/api/bookmarks", verifyToken, async (req, res) => {
   }
 });
 
-// ─── COMMENT ROUTES ────────────────────────────────
+// -----------------------COMMENT ROUTES -------------------------------
 app.get("/api/comments/user/:email", verifyToken, async (req, res) => {
   try {
     const comments = await Comment.find({ userEmail: req.params.email }).sort({ createdAt: -1 });
@@ -404,11 +405,12 @@ app.delete("/api/comments/:id", verifyToken, async (req, res) => {
   }
 });
 
-// ─── ROOT ──────────────────────────────────────────
+// --------------------ROOT ----------------------------
 app.get("/", (req, res) => {
-  res.send("IdeaVault Server Running! 🚀");
+  res.send("IdeaVault Server Running Now! 🚀");
 });
 
-// ─── START ─────────────────────────────────────────
+
+// --------------------START ----------------------------
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`✅ Server running on this  port ${PORT}`));
